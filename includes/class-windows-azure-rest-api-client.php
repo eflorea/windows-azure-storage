@@ -1037,6 +1037,13 @@ class Windows_Azure_Rest_Api_Client {
 
 		$this->_current_url = $endpoint_url;
 
+		$debug_on = \Windows_Azure_Helper::get_debug_logs();
+
+		if ( $debug_on ) {
+			$time = microtime() . '-' . rand( 0, 1000 );
+			error_log( 'Sending data to azure #' . $time );
+		}
+
 		$result = wp_remote_request( $endpoint_url, array(
 			'method'      => $method,
 			'headers'     => $headers,
@@ -1044,6 +1051,10 @@ class Windows_Azure_Rest_Api_Client {
 			'timeout'     => $query_args['timeout'],
 			'httpversion' => '1.1',
 		) );
+
+		if ( $debug_on ) {
+			error_log( 'Response from azure: #' . $time . ':' . wp_remote_retrieve_response_code( $result ) );
+		}
 
 		$this->_current_url = null;
 

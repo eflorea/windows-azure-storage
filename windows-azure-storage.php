@@ -3,7 +3,7 @@
  * Plugin Name: Microsoft Azure Storage for WordPress
  * Plugin URI: https://wordpress.org/plugins/windows-azure-storage/
  * Description: Use the Microsoft Azure Storage service to host your website's media files.
- * Version: 4.3.1
+ * Version: 4.3.2
  * Author: 10up, Microsoft Open Technologies
  * Author URI: http://10up.com/
  * License: BSD 2-Clause
@@ -60,7 +60,7 @@
 define( 'MSFT_AZURE_PLUGIN_PATH', plugin_dir_path( __FILE__ ) );
 define( 'MSFT_AZURE_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'MSFT_AZURE_PLUGIN_LEGACY_MEDIA_URL', get_admin_url( get_current_blog_id(), 'media-upload.php' ) );
-define( 'MSFT_AZURE_PLUGIN_VERSION', '4.3.1' );
+define( 'MSFT_AZURE_PLUGIN_VERSION', '4.3.2' );
 
 require_once MSFT_AZURE_PLUGIN_PATH . 'windows-azure-storage-settings.php';
 require_once MSFT_AZURE_PLUGIN_PATH . 'windows-azure-storage-dialog.php';
@@ -375,7 +375,7 @@ function windows_azure_storage_wp_get_attachment_metadata( $data, $post_id ) {
  */
 function windows_azure_storage_wp_generate_attachment_metadata( $data, $post_id ) {
 	$default_azure_storage_account_container_name = \Windows_Azure_Helper::get_default_container();
-	
+
 	// Get upload directory.
 	$upload_dir = \Windows_Azure_Helper::wp_upload_dir();
 
@@ -387,6 +387,12 @@ function windows_azure_storage_wp_generate_attachment_metadata( $data, $post_id 
 
 	// Upload path for remaining files
 	$upload_folder_path = trailingslashit( ltrim( $upload_dir['reldir'] . $upload_dir['subdir'], '/' ) );
+
+	// check debug logs.
+	$debug_on = \Windows_Azure_Helper::get_debug_logs();
+	if ( $debug_on ) {
+		error_log( 'Offload assets started' );
+	}
 
 	try {
 		$post_array = wp_unslash( $_POST );
@@ -406,6 +412,10 @@ function windows_azure_storage_wp_generate_attachment_metadata( $data, $post_id 
 		}
 		if ( ! empty( $data['original_image'] ) ) {
 			$total++;
+		}
+
+		if ( $debug_on ) {
+			error_log( 'Data to offload:' . maybe_serialize( $post_array ) );
 		}
 
 		try {
@@ -519,7 +529,7 @@ function windows_azure_storage_wp_generate_attachment_metadata( $data, $post_id 
  */
 function windows_azure_storage_delete_local_files( $data, $attachment_id ) {
 	$upload_file_name = get_attached_file( $attachment_id, true );
-	
+
 	// Use core function introduced in 4.9.7 for deleting local files if available
 	if ( function_exists( 'wp_delete_attachment_files') ) {
 		$deleted = wp_delete_attachment_files( $attachment_id, $data, array(), $upload_file_name );
@@ -532,14 +542,14 @@ function windows_azure_storage_delete_local_files( $data, $attachment_id ) {
 	// Get upload directory.
 	$upload_dir = Windows_Azure_Helper::wp_upload_dir();
 	$subdir = ltrim( $upload_dir['reldir'] . $upload_dir['subdir'], DIRECTORY_SEPARATOR );
-	
+
 	$relative_file_name = DIRECTORY_SEPARATOR === $subdir
 		? basename( $upload_file_name )
 		: str_replace( $upload_dir['uploads'] . DIRECTORY_SEPARATOR, '', $upload_file_name );
 
 	// Delete local file
 	Windows_Azure_Helper::unlink_file( $relative_file_name );
-	
+
 	$file_upload_dir = strpos( $relative_file_name, '/' ) !== false
 		? substr( $relative_file_name, 0, strrpos( $relative_file_name, '/' ) )
 		: '';

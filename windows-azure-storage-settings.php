@@ -125,6 +125,10 @@ function windows_azure_storage_plugin_register_settings() {
 		register_setting( 'windows-azure-storage-settings-group', 'azure_cache_control', 'sanitize_text_field' );
 	}
 
+	if ( ! defined( 'MICROSOFT_AZURE_DEBUG_LOGS' ) ) {
+		register_setting( 'windows-azure-storage-settings-group', 'azure_debug_logs', 'wp_validate_boolean' );
+	}
+
 	/**
 	 * @since 4.0.0
 	 */
@@ -211,6 +215,16 @@ function windows_azure_storage_plugin_register_settings() {
 		'azure_cache_control',
 		__( 'Cache control in seconds', 'windows-azure-storage' ),
 		'windows_azure_cache_control',
+		'windows-azure-storage-plugin-options',
+		'windows-azure-storage-settings'
+	);
+	/**
+	 * @since 4.3.2
+	 */
+	add_settings_field(
+		'azure_debug_logs',
+		__( 'Debug Logs', 'windows-azure-storage' ),
+		'windows_azure_debug_logs',
 		'windows-azure-storage-plugin-options',
 		'windows-azure-storage-settings'
 	);
@@ -433,6 +447,28 @@ function windows_azure_cache_control() {
 
 	echo '<p>';
 		_e( 'Setting Cache-Control on publicly accessible Microsoft Azure Blobs can help reduce bandwidth by preventing consumers from having to continuously download resources. Specify a relative amount of time in seconds to cache data after it was received or enter exact cache-control value which you want to use for your assets. You can define <code>MICROSOFT_AZURE_CACHE_CONTROL</code> constant to override it.', 'windows-azure-storage' );
+	echo '</p>';
+}
+
+/**
+ * Displays debug logs setting.
+ *
+ * @since 4.3.2
+ *
+ * @return void
+ */
+function windows_azure_debug_logs() {
+	$debug_logs = Windows_Azure_Helper::get_debug_logs();
+
+	if ( defined( 'MICROSOFT_AZURE_CACHE_CONTROL' ) ) {
+		echo '<input type="checkbox" name="azure_debug_logs" title="' . esc_attr__( 'Enable debug logs.', 'windows-azure-storage' ) . '" value="1" id="azure_debug_logs" ' . checked( 1, MICROSOFT_AZURE_CACHE_CONTROL, false ) . '>';
+	} else {
+		echo '<input type="checkbox" name="azure_debug_logs" id="azure_debug_logs" class="regular-text" value="1" ' . checked( 1, $debug_logs, false ) . '>';
+	}
+	echo '<label for="azure_debug_logs">' . esc_html__( 'Enable Debug Logs', 'windows-azure-storage' ) . '</label>';
+
+	echo '<p>';
+	_e( 'You can define <code>MICROSOFT_AZURE_DEBUG_LOGS</code> to override it.', 'windows-azure-storage' );
 	echo '</p>';
 }
 

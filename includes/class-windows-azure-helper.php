@@ -241,6 +241,21 @@ class Windows_Azure_Helper {
 	}
 
 	/**
+	 * Returns debug-logs
+	 *
+	 * @since 4.3.2
+	 *
+	 * @return int Debug logs.
+	 */
+	static public function get_debug_logs() {
+		if ( defined( 'MICROSOFT_AZURE_DEBUG_LOGS' ) ) {
+			return MICROSOFT_AZURE_DEBUG_LOGS;
+		}
+		$option_value = intval( get_option( 'azure_debug_logs', 0 ) );
+		return ( 0 !== $option_value );
+	}
+
+	/**
 	 * Return container ACL.
 	 *
 	 * @since 4.0.0
@@ -479,7 +494,15 @@ class Windows_Azure_Helper {
 		list( $account_name, $account_key ) = self::get_api_credentials( $account_name, $account_key );
 		$rest_api_client = new Windows_Azure_Rest_Api_Client( $account_name, $account_key );
 
+		// check debug.
+		$debug_on = self::get_debug_logs();
+		if ( $debug_on ) {
+			error_log( 'Putting blob to azure: ' . $account_name );
+		}
 		$result = $rest_api_client->put_blob( $container_name, $local_path, $blob_name );
+		if ( $debug_on ) {
+			error_log( 'Azure storage response: ' . print_r( $result, true ) );
+		}
 		if ( ! $result || is_wp_error( $result ) ) {
 			return $result;
 		}

@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file, per [the Keep a Changelog standard](http://keepachangelog.com/).
 
 ## [Unreleased] - TBD
+- Add DEBUG Logs flag to monitor data sent and responses Azure services.
 
 ## [4.3.1] - 2020-02-12
 ### Fixed
@@ -76,7 +77,7 @@ All notable changes to this project will be documented in this file, per [the Ke
 - Introduced filter `azure_blob_list_blobs_max_results` which defines max size of blobs listing per one request.
 - Introduced filter `azure_blob_put_blob_headers` which defines headers used for creating new blob.
 - Introduced filter `azure_blob_append_blob_headers` which defines headers used for appending created blob.
-  
+
 ### Changed
 - Removed old PHP SDK and use WordPress HTTP API based client library.
 - Improved overall performance.
